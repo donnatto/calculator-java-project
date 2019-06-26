@@ -23,7 +23,6 @@ public class frmPrincipal extends javax.swing.JFrame {
   int n;
   PilaCaracteres pilaExpresion;
   PilaCaracteres pilaOperadores;
-  PilaCaracteres pilaSalida;
   PilaNros operandos;
 
   public frmPrincipal() {
@@ -341,7 +340,7 @@ public class frmPrincipal extends javax.swing.JFrame {
   }
 
   private static String depurar(String s) {
-    s = s.replaceAll("\\s+", "");
+    s = s.replaceAll("\\s+", "");//elimina espacios
     s = "(" + s + ")";
     String simbols = "+-x/()";
     String str = "";
@@ -456,7 +455,7 @@ public class frmPrincipal extends javax.swing.JFrame {
           postfija += pilaExpresion.sacar() + " ";
       }
     }
-    //salida postfija
+    //Salida postfija *opcional*
     //JOptionPane.showMessageDialog(this, postfija);
 
     //Evaluar Posfija
@@ -468,7 +467,7 @@ public class frmPrincipal extends javax.swing.JFrame {
 
       if (caracter == ' ' || caracter == ',') {
         continue;
-      } else if (caracter == '+' || caracter == '-' || caracter == 'x' || caracter == '/' || caracter == '^') {
+      } else if (caracter == '+' || caracter == '-' || caracter == 'x' || caracter == '/') {
         b = operandos.sacar();
         a = operandos.sacar();
         c = 0;

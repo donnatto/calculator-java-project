@@ -44,8 +44,4 @@ public class PilaCaracteres {
     return aux;
   }
 
-  public String getPilaVector(int n) {
-    return PilaVector[n];
-  }
-  
 }
