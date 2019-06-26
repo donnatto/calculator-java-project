@@ -10,5 +10,26 @@ package datos;
  * @author Alumno
  */
 public class PilaNros {
-    
+
+  int cima;
+  double[] PilaVector;
+
+  public PilaNros(int tam) {
+    PilaVector = new double[tam];
+    cima = -1;
+  }
+
+  public void poner(double dato) {
+    cima = cima + 1;
+    PilaVector[cima] = dato;
+  }
+
+  public double sacar() {
+    double aux;
+
+    aux = PilaVector[cima];
+    cima = cima - 1;
+
+    return aux;
+  }
 }

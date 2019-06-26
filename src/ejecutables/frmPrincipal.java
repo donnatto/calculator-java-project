@@ -5,6 +5,12 @@
  */
 package ejecutables;
 
+import datos.PilaCaracteres;
+import datos.PilaNros;
+import static java.lang.Math.round;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author ASUS
@@ -14,8 +20,18 @@ public class frmPrincipal extends javax.swing.JFrame {
   /**
    * Creates new form frmPrincipal
    */
+  int n;
+  PilaCaracteres pilaExpresion;
+  PilaCaracteres pilaOperadores;
+  PilaCaracteres pilaSalida;
+  PilaNros operandos;
+
   public frmPrincipal() {
     initComponents();
+    n = 15;
+    pilaExpresion = new PilaCaracteres(n);
+    pilaOperadores = new PilaCaracteres(n);
+    operandos = new PilaNros(n);
   }
 
   /**
@@ -311,61 +327,181 @@ public class frmPrincipal extends javax.swing.JFrame {
     pack();
   }// </editor-fold>//GEN-END:initComponents
 
-  
-  public String texto(){
-    String text= txtCalc.getText();
+  public String texto() {
+    String text = txtCalc.getText();
     return text;
   }
+
   public String delete() {
     String str = texto();
     if (str != null && str.length() > 0) {
-        str = str.substring(0, str.length() - 1);
+      str = str.substring(0, str.length() - 1);
     }
     return str;
-}
-  
+  }
+
+  private static String depurar(String s) {
+    s = s.replaceAll("\\s+", "");
+    s = "(" + s + ")";
+    String simbols = "+-x/()";
+    String str = "";
+
+    //espacios entre operadores
+    for (int i = 0; i < s.length(); i++) {
+      if (simbols.contains("" + s.charAt(i))) {
+        str += " " + s.charAt(i) + " ";
+      } else {
+        str += s.charAt(i);
+      }
+    }
+    return str.replaceAll("\\s+", " ").trim();
+  }
+
+  //jerarquía de operadores
+  private static int pref(String op) {
+    int prf = 99;
+
+    if (op.equals("x") || op.equals("/")) {
+      prf = 4;
+    }
+    if (op.equals("+") || op.equals("-")) {
+      prf = 3;
+    }
+    if (op.equals(")")) {
+      prf = 2;
+    }
+    if (op.equals("(")) {
+      prf = 1;
+    }
+    return prf;
+  }
+
   private void btnPar1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPar1ActionPerformed
     // TODO add your handling code here:
-    txtCalc.setText(texto()+"(");
+    txtCalc.setText(texto() + "(");
   }//GEN-LAST:event_btnPar1ActionPerformed
 
   private void btnMultActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMultActionPerformed
     // TODO add your handling code here:
-    txtCalc.setText(texto()+"x");
+    txtCalc.setText(texto() + "x");
   }//GEN-LAST:event_btnMultActionPerformed
 
   private void btnDivActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDivActionPerformed
     // TODO add your handling code here:
-    txtCalc.setText(texto()+"/");
+    txtCalc.setText(texto() + "/");
   }//GEN-LAST:event_btnDivActionPerformed
 
   private void btn7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn7ActionPerformed
     // TODO add your handling code here:
-    txtCalc.setText(texto()+"7");
+    txtCalc.setText(texto() + "7");
   }//GEN-LAST:event_btn7ActionPerformed
 
   private void btnRestaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRestaActionPerformed
     // TODO add your handling code here:
-    txtCalc.setText(texto()+"-");
+    txtCalc.setText(texto() + "-");
   }//GEN-LAST:event_btnRestaActionPerformed
 
   private void btn4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn4ActionPerformed
     // TODO add your handling code here:
-    txtCalc.setText(texto()+"4");
+    txtCalc.setText(texto() + "4");
   }//GEN-LAST:event_btn4ActionPerformed
 
   private void btnSumaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSumaActionPerformed
     // TODO add your handling code here:
-    txtCalc.setText(texto()+"+");
+    txtCalc.setText(texto() + "+");
   }//GEN-LAST:event_btnSumaActionPerformed
 
   private void btn1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn1ActionPerformed
     // TODO add your handling code here:
-    txtCalc.setText(texto()+"1");
+    txtCalc.setText(texto() + "1");
   }//GEN-LAST:event_btn1ActionPerformed
+
+  ///Proceso Principal
 
   private void btnResultadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnResultadoActionPerformed
     // TODO add your handling code here:
+    String postfija, acum, resultado;
+    String exp = depurar(txtCalc.getText());
+    String[] expresionInfija = exp.split(" ");
+    double a, b, c;
+    char caracter;
+    int n, i;
+    postfija = "";
+
+    //Convertir Infija a Posfija
+    for (i = expresionInfija.length - 1; i >= 0; i--) {
+      pilaExpresion.poner(expresionInfija[i]);
+    }
+
+    while (pilaExpresion.getCima() != -1) {
+      switch (pref(pilaExpresion.observar())) {
+        case 1:
+          pilaOperadores.poner(pilaExpresion.sacar());
+          break;
+        case 3:
+        case 4:
+          while (pref(pilaOperadores.observar()) >= pref(pilaExpresion.observar())) {
+            postfija += pilaOperadores.sacar() + " ";
+          }
+          pilaOperadores.poner(pilaExpresion.sacar());
+          break;
+        case 2:
+          while (!pilaOperadores.observar().equals("(")) {
+            postfija += pilaOperadores.sacar() + " ";
+          }
+          pilaOperadores.sacar();
+          pilaExpresion.sacar();
+          break;
+        default:
+          postfija += pilaExpresion.sacar() + " ";
+      }
+    }
+    //salida postfija
+    //JOptionPane.showMessageDialog(this, postfija);
+
+    //Evaluar Posfija
+    n = postfija.length();
+    acum = "";
+
+    for (i = 0; i < n; i++) {
+      caracter = postfija.charAt(i);
+
+      if (caracter == ' ' || caracter == ',') {
+        continue;
+      } else if (caracter == '+' || caracter == '-' || caracter == 'x' || caracter == '/' || caracter == '^') {
+        b = operandos.sacar();
+        a = operandos.sacar();
+        c = 0;
+
+        switch (caracter) {
+          case '+':
+            c = a + b;
+            break;
+          case '-':
+            c = a - b;
+            break;
+          case 'x':
+            c = a * b;
+            break;
+          case '/':
+            c = a / b;
+            break;
+        }
+
+        operandos.poner(c);
+      } else {
+        acum = acum + caracter;
+        if (postfija.charAt(i + 1) == ' ' || postfija.charAt(i + 1) == ',') {
+          c = Double.parseDouble(acum);
+          operandos.poner(c);
+          acum = "";
+        }
+      }
+    }
+    resultado = String.valueOf(((double)Math.round(operandos.sacar()*100)/100));
+    txtCalc.setText(resultado);
+
+
   }//GEN-LAST:event_btnResultadoActionPerformed
 
   private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
@@ -375,37 +511,37 @@ public class frmPrincipal extends javax.swing.JFrame {
 
   private void btn5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn5ActionPerformed
     // TODO add your handling code here:
-    txtCalc.setText(texto()+"5");
+    txtCalc.setText(texto() + "5");
   }//GEN-LAST:event_btn5ActionPerformed
 
   private void btn0ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn0ActionPerformed
     // TODO add your handling code here:
-    txtCalc.setText(texto()+"0");
+    txtCalc.setText(texto() + "0");
   }//GEN-LAST:event_btn0ActionPerformed
 
   private void btn2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn2ActionPerformed
     // TODO add your handling code here:
-    txtCalc.setText(texto()+"2");
+    txtCalc.setText(texto() + "2");
   }//GEN-LAST:event_btn2ActionPerformed
 
   private void btn3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn3ActionPerformed
     // TODO add your handling code here:
-    txtCalc.setText(texto()+"3");
+    txtCalc.setText(texto() + "3");
   }//GEN-LAST:event_btn3ActionPerformed
 
   private void btn6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn6ActionPerformed
     // TODO add your handling code here:
-    txtCalc.setText(texto()+"6");
+    txtCalc.setText(texto() + "6");
   }//GEN-LAST:event_btn6ActionPerformed
 
   private void btn8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn8ActionPerformed
     // TODO add your handling code here:
-    txtCalc.setText(texto()+"8");
+    txtCalc.setText(texto() + "8");
   }//GEN-LAST:event_btn8ActionPerformed
 
   private void btn9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn9ActionPerformed
     // TODO add your handling code here:
-    txtCalc.setText(texto()+"9");
+    txtCalc.setText(texto() + "9");
   }//GEN-LAST:event_btn9ActionPerformed
 
   private void btnDelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDelActionPerformed
@@ -415,14 +551,14 @@ public class frmPrincipal extends javax.swing.JFrame {
 
   private void btnPar2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPar2ActionPerformed
     // TODO add your handling code here:
-    txtCalc.setText(texto()+")");
+    txtCalc.setText(texto() + ")");
   }//GEN-LAST:event_btnPar2ActionPerformed
 
   private void btnPuntoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPuntoActionPerformed
     // TODO add your handling code here:
-    txtCalc.setText(texto()+".");
+    txtCalc.setText(texto() + ".");
   }//GEN-LAST:event_btnPuntoActionPerformed
-  
+
   /**
    * @param args the command line arguments
    */
